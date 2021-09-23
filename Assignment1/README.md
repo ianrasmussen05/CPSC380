@@ -22,4 +22,4 @@
 * make
 
 ## Execute Program:
-* ./Recfile records.bat
+* ./recfile
