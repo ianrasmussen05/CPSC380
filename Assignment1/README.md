@@ -1,7 +1,7 @@
 # Assignment 1: System Calls - File I/O
 
 In this program, the user can either input the two needed numbers in the terminal, or they can be prompted within the 
-program itself. It will be printing to 'records.bat' all the Records with the corresponding ID. If the file does not 
+program itself. It will be printing to 'records.dbat' all the Records with the corresponding ID. If the file does not 
 exist, it will create it and from there, the program will make a system call to search for the specific location in 
 memory to change a record. Again, printing that to a file.
 
@@ -12,7 +12,7 @@ memory to change a record. Again, printing that to a file.
 * Assignment: Assignment 1
 
 ## Source Files:
-* records.bat
+* records.dat
 * recfile.cpp
 
 ## Resources:

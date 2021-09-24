@@ -1,10 +1,14 @@
 // Use perror() to error check later in the program
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <string>
+extern int errno;
 
 #define NRECORDS 100
 typedef struct 
@@ -12,18 +16,6 @@ typedef struct
 	int   integer;
 	char  string[24];
 } RECORD;
-
-/*
-void consoleInput(char value1[], char value2[])
-{
-
-}
-
-void userInput()
-{
-
-}
-*/
 
 int main(int argc, char *argv[])
 {    
@@ -33,7 +25,7 @@ int main(int argc, char *argv[])
 
     if (argc == 3)
     {
-        //consoleInput(argv[1], argv[2]);
+        //consoleInput(argv[1], argv[2]); // I was thinking about using other functions, but did not work out that way
         value1 = argv[1];
         value2 = argv[2];
 
@@ -55,8 +47,11 @@ int main(int argc, char *argv[])
         char tempValue1[24];
         char tempValue2[24];
 
-        //userInput();
+        //userInput(); // Use of other function, didn't work out
         printf("Enter the first number: ");
+
+        // Used this link to use scanf: 
+        // https://stackoverflow.com/questions/37921081/scanf-a-string-in-a-char-pointer
         scanf("%s", tempValue1);
 
         // Checking to see if the user inputted valid numbers
@@ -76,8 +71,32 @@ int main(int argc, char *argv[])
     // Checks to see if my values are good
     printf("\nThe first value is %s \nThe second value is %s \n", value1, value2); 
 
-    // This is where the printing and checking will be.
+    // int file;
+    //file = open("records.dat", O_CREAT | O_WRONLY); // Opens the file
+    FILE *file;
+    file = fopen("records.dat", "w");
 
+    if (file == NULL) // Catch any errors when opening file
+    {
+        printf("Error: %d\n", errno);
+        perror("Program");
+        return 1;
+    }
+
+    for (int num = 0; num < NRECORDS; ++num)
+    {
+        //fwrite()
+    }
+
+    fclose(file);
+    /*
+    if (close(file) < 0) // Close the file
+    {
+        printf("Error: %d\n", errno);
+        perror("Program");
+        return 1;
+    }
+    */
 
     return 0;
 }
