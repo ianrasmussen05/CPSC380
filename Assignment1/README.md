@@ -1,6 +1,9 @@
 # Assignment 1: System Calls - File I/O
 
-(Enter how the program works here)
+In this program, the user can either input the two needed numbers in the terminal, or they can be prompted within the 
+program itself. It will be printing to 'records.bat' all the Records with the corresponding ID. If the file does not 
+exist, it will create it and from there, the program will make a system call to search for the specific location in 
+memory to change a record. Again, printing that to a file.
 
 * Name: Ian Rasmussen
 * Student ID: 2317200
@@ -16,7 +19,7 @@
 * None so far.
 
 ## Code Limitations:
-* None so far.
+* Have checked for valid inputs, need to print to file and check through file.
 
 ## Build Program:
 * make

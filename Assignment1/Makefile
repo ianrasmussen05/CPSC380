@@ -1,4 +1,4 @@
-EXECUTABLE := Recfile
+EXECUTABLE := recfile
 
 SOURCES := *.cpp
 
@@ -16,12 +16,12 @@ CFLAGS  := -g -Wall
 default: $(EXECUTABLE)
 
 # To create the executable file count we need the object files
-# Student.o and main.o:
+# recfile.o and main.o:
 $(EXECUTABLE):  recfile.o 
 	$(CC) $(CFLAGS) -o $(EXECUTABLE) recfile.o
 
-# To create the object file GenStack.o, we need the source files
-# GenStack.cpp and GenStack.h:
+# To create the object file recfile.o, we need the source files
+# recfile.cpp
 recfile.o:  recfile.cpp
 	$(CC) $(CFLAGS) -c recfile.cpp
 
