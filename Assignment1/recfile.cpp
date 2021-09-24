@@ -1,4 +1,10 @@
-// Use perror() to error check later in the program
+/*
+ * Ian Rasmussen
+ * 2317200
+ * irasmussen@chapman.edu
+ * CPSC 380-01
+ * Assignment 1
+ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -7,15 +13,15 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <string>
+#include <string.h>
 extern int errno;
 
 #define NRECORDS 100
-typedef struct 
-{
+typedef struct {
 	int   integer;
-	char  string[24];
+	char  string[24] = "RECORD-";
 } RECORD;
+
 
 int main(int argc, char *argv[])
 {    
@@ -71,8 +77,6 @@ int main(int argc, char *argv[])
     // Checks to see if my values are good
     printf("\nThe first value is %s \nThe second value is %s \n", value1, value2); 
 
-    // int file;
-    //file = open("records.dat", O_CREAT | O_WRONLY); // Opens the file
     FILE *file;
     file = fopen("records.dat", "w");
 
@@ -83,20 +87,46 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    RECORD allRecord[NRECORDS];
     for (int num = 0; num < NRECORDS; ++num)
     {
-        //fwrite()
+        allRecord[num].integer = num;
+        char *str;
+        strcat(str, allRecord[num].string);
+        //printf(allRecord[num].string);
+        sprintf(allRecord[num].string, "%d", allRecord[num].integer);
+        strcat(str, allRecord[num].string);
+        printf(allRecord[num].string);
+        // I got sprintf from: https://stackoverflow.com/questions/347132/append-an-int-to-char 
+
+        int output = fwrite(&allRecord[num].string, sizeof(allRecord[num].string), 1, file);
+
+        if (output == 0)
+        {
+            printf("Error: %d\n", errno);
+            perror("Program");
+            return 1;
+        }
     }
 
-    fclose(file);
-    /*
-    if (close(file) < 0) // Close the file
+    fclose(file); // Close file
+
+
+    // Open the same file again, this time to change it
+    file = fopen("records.dat", "r+");
+
+    if (file == NULL) // Catch any errors when opening file
     {
         printf("Error: %d\n", errno);
         perror("Program");
         return 1;
     }
-    */
+
+    // Used this reference for fseek and fputs: https://www.cplusplus.com/reference/cstdio/fseek/
+    fseek(file, 20, SEEK_SET);
+    fputs(value2, file);
+
+    fclose(file); // Close it one last time
 
     return 0;
 }

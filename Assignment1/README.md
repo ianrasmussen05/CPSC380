@@ -1,9 +1,11 @@
 # Assignment 1: System Calls - File I/O
 
 In this program, the user can either input the two needed numbers in the terminal, or they can be prompted within the 
-program itself. It will be printing to 'records.dbat' all the Records with the corresponding ID. If the file does not 
+program itself. It will be printing to 'records.dat' all the Records with the corresponding ID. If the file does not 
 exist, it will create it and from there, the program will make a system call to search for the specific location in 
 memory to change a record. Again, printing that to a file.
+
+In my previous commits to github, I have older versions of what I did to open/close the file.
 
 * Name: Ian Rasmussen
 * Student ID: 2317200
@@ -19,7 +21,7 @@ memory to change a record. Again, printing that to a file.
 * None so far.
 
 ## Code Limitations:
-* Have checked for valid inputs, need to print to file and check through file.
+* I do not have the output correct on the file. Still need to have it so the record is changed.
 
 ## Build Program:
 * make
