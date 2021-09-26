@@ -13,13 +13,13 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <string.h>
+#include <string>
 extern int errno;
 
 #define NRECORDS 100
 typedef struct {
 	int   integer;
-	char  string[24] = "RECORD-";
+	char  string[24];
 } RECORD;
 
 
@@ -74,11 +74,8 @@ int main(int argc, char *argv[])
         value2 = tempValue2;
     }
 
-    // Checks to see if my values are good
-    printf("\nThe first value is %s \nThe second value is %s \n", value1, value2); 
-
-    FILE *file;
-    file = fopen("records.dat", "w");
+    FILE *file = NULL;
+    file = fopen("records.dat", "wb");
 
     if (file == NULL) // Catch any errors when opening file
     {
@@ -87,33 +84,36 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    RECORD allRecord[NRECORDS];
+    //RECORD allRecords[NRECORDS];
+    
     for (int num = 0; num < NRECORDS; ++num)
     {
-        allRecord[num].integer = num;
-        char *str;
-        strcat(str, allRecord[num].string);
-        //printf(allRecord[num].string);
-        sprintf(allRecord[num].string, "%d", allRecord[num].integer);
-        strcat(str, allRecord[num].string);
-        printf(allRecord[num].string);
-        // I got sprintf from: https://stackoverflow.com/questions/347132/append-an-int-to-char 
+        std::string strNum;
+        if (num < 10)
+        {
+            strNum = std::to_string(num) + " ";
+        }
+        else 
+        {
+            strNum = std::to_string(num);
+        }
 
-        int output = fwrite(&allRecord[num].string, sizeof(allRecord[num].string), 1, file);
+        // The string size will be a maximum of 10 characters
+        std::string str = "RECORD-" + strNum + "\n";
+        int output = fwrite(&str, sizeof(str), 1, file);
 
-        if (output == 0)
+        if (output != 1)
         {
             printf("Error: %d\n", errno);
             perror("Program");
             return 1;
-        }
+        }        
     }
 
     fclose(file); // Close file
 
-
     // Open the same file again, this time to change it
-    file = fopen("records.dat", "r+");
+    file = fopen("records.dat", "w+");
 
     if (file == NULL) // Catch any errors when opening file
     {
@@ -123,10 +123,12 @@ int main(int argc, char *argv[])
     }
 
     // Used this reference for fseek and fputs: https://www.cplusplus.com/reference/cstdio/fseek/
-    fseek(file, 20, SEEK_SET);
-    fputs(value2, file);
+    fseek(file, 10 * sizeof(value1), SEEK_SET); // Try to get size of each line (10) and multiply that by first value inputed
+    fputs(value2, file); // Both of these functions fail to do what I want it to do
 
     fclose(file); // Close it one last time
+
+    printf("Completed!\n");
 
     return 0;
 }

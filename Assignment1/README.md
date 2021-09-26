@@ -18,13 +18,16 @@ In my previous commits to github, I have older versions of what I did to open/cl
 * recfile.cpp
 
 ## Resources:
-* None so far.
+* Cited many of the links I used in my 'recfile.cpp' file.
 
 ## Code Limitations:
-* I do not have the output correct on the file. Still need to have it so the record is changed.
+The code does compile but:
+* I do not have the output correct on the file. I get these symbols in the 'records.dat' file that I could not figure out how to get rid of. 
+* Had many troubles with the fseek() and fput() functions at the bottom of the file. Again, printing the unexpected results.
 
 ## Build Program:
 * make
 
 ## Execute Program:
 * ./recfile
+* or ./recfile (num1) (num2)
