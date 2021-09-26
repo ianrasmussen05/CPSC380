@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
 
     if (argc == 3)
     {
-        //consoleInput(argv[1], argv[2]); // I was thinking about using other functions, but did not work out that way
         value1 = argv[1];
         value2 = argv[2];
 
@@ -53,7 +52,6 @@ int main(int argc, char *argv[])
         char tempValue1[24];
         char tempValue2[24];
 
-        //userInput(); // Use of other function, didn't work out
         printf("Enter the first number: ");
 
         // Used this link to use scanf: 
@@ -84,7 +82,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    //RECORD allRecords[NRECORDS];
+    //RECORD allRecords[NRECORDS]; // I tried to use the struct at first, did not do this
     
     for (int num = 0; num < NRECORDS; ++num)
     {
