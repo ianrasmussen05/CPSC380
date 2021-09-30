@@ -11,7 +11,7 @@ extern int errno;
 
 int main(void)
 {
-    char *args[MAX_LINE/2 + 1];	/* max of 40 arguments */
+	char *args[MAX_LINE/2 + 1];	/* max of 40 arguments */
 	char quitStr[8] = "quit";
 	char exitStr[8] = "exit";
 	char userInput[8];
@@ -27,7 +27,7 @@ int main(void)
 	scanf("%s", userInput);
 		
     while (true)
-    {   
+	{
 		if(strcmp(ptr3, ptr1) == 0) // Checks to see if the user inputted "quit"
 		{
 			printf("Exiting...\n");
@@ -66,7 +66,7 @@ int main(void)
 			printf("osh> ");
 			scanf("%s", userInput);
 		}
-   	}
+	}
     
 	return 0;
 }
