@@ -1,70 +1,59 @@
+/*
+ * Ian Rasmussen
+ * 2317200
+ * irasmussen@chapman.edu
+ * CPSC 380-01
+ * Assignment 2
+ */
+
 #include <stdio.h>
-#include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <errno.h>
-extern int errno;
+#include <iostream>
+#include <string>
 
-#define MAX_LINE 80     /* 80 chars per line, per command */
-
-int main(void)
+int main(int argc, char *argv[])
 {
-	char *args[MAX_LINE/2 + 1];	/* max of 40 arguments */
-	char quitStr[8] = "quit";
-	char exitStr[8] = "exit";
-	char userInput[8];
-	char* ptr1 = quitStr;
-	char* ptr2 = exitStr;
-	char* ptr3 = userInput;
+	std::string currLine;
 
-	printf("Type '%s' or '%s' to leave the program.\n", quitStr, exitStr);
+	std::cout <<"Type 'quit' or 'exit' to leave the program." << std::endl;
 	
-	bool firstLoop = true;
-	
-	printf("osh> ");
-	scanf("%s", userInput);
-		
-    while (true)
+	while (true)
 	{
-		if(strcmp(ptr3, ptr1) == 0) // Checks to see if the user inputted "quit"
-		{
-			printf("Exiting...\n");
-			return 1;
-		}
-		else if (strcmp(ptr3, ptr2) == 0) // Checks to see if the user inputted "exit"
-		{
-			printf("Exiting...\n");
-			return 1;
-		}
-		else // User enters a command
-		{
-			fflush(stdout);
+		printf("osh> ");
+		fflush(stdout);
 
-			/** fork a child to execute command (using one of the exec calls)
-			Break out of loop if user types ‘quit’ or ‘exit’ then exit   program **/
-			pid_t fk = fork();
+		std::cin >> currLine; // Gets user input
+
+		if((currLine == "exit") || (currLine == "quit")) // Checks to see if the user inputted "quit"
+		{
+			std::cout << "Exiting..." << std::endl;
+			return -1; // This returns -1 because any other input (0 or 1) does not work
+		}
+		else // User enters a valid command
+		{
+			pid_t fk = fork(); // Fork the program
 
 			if (fk < 0) // Did not work correctly
 			{
-				perror("Fork\n");
+				perror("Fork Error\n");
 				return 1;
 			}
 			else if (fk == 0) // This is the child
 			{
-				printf("4\n");
+				// I got this from Office hours on Saturday
+				execlp(currLine.c_str(), currLine.c_str(), NULL);
 			}
 			else // This is the parent
 			{
-				printf("10\n");
-
+				sleep(1);
 				// If the input has a '&' in it, then we wait for the child
-				wait(nullptr);
+				// Always found at the end of the user input
+				if (currLine[currLine.length() - 1] == '&')
+				{
+					wait(NULL);
+				}
 			}
-
-			printf("osh> ");
-			scanf("%s", userInput);
 		}
 	}
     
