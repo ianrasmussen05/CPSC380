@@ -17,8 +17,8 @@
 #define MAX_LINE 80 // 80 chars per line, per command
 
 struct msgbuf {
-long mtype;
-      char mtext[MAX_LINE];
+    long mtype;
+    char mtext[MAX_LINE];
 };
 
 int main(int argc, char *argv[])
