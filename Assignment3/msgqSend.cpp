@@ -10,34 +10,78 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <unistd.h>
+#include <errno.h>
 #include <iostream>
+#include <string.h>
 #include <string>
 
 #define MAX_LINE 80 // 80 chars per line, per command
 
-struct msgbuf {
+#ifndef _MSGBUF
+#define _MSGBUF
+struct Msgbuf
+{
     long mtype;
     char mtext[MAX_LINE];
 };
+#endif
 
 int main(int argc, char *argv[])
 {
-    key_t  key;  	// message queue key
-   	int should_run = 1;
-	
-	key = ftok(argv[1], ‘q’);
+    key_t key;  	// message queue key
+    int msgqID;   // message queue ID
+    int msgSend;
+    int should_run = 1;
+    
+    key = ftok(argv[1], 'q'); // generate key
+    if (key == -1)
+    {
+        perror("ftok");
+        return -1;
+    }
 
-	// Create/attach message queue using key
-		
+    msgqID = msgget(key, 0555 | IPC_CREAT); // generate message ID
+    if (msgqID == -1)
+    {
+        perror("msgget");
+        return -1;
+    }
+
+    struct Msgbuf buffer; // create buffer object
+    std::string userInput; // string input
+
+    buffer.mtype = 1; // Not sure of the purpose of the long type
+
+    std::cout << "Enter 'exit' or 'quit' to exit the program." << std::endl;
+
     while (should_run) 
     {   
-        printf("msgq>");
+        printf("msgq> ");
         fflush(stdout);
-        
-        // read command from stdin then send command to message queue 
-        // Break out of loop if user types ‘quit’ or ‘exit’ then delete the message queue and exit program
-	}
 
-	return 0;
+        std::cin >> userInput;
+        strcpy(buffer.mtext, userInput.c_str());
+
+        if (userInput == "quit" || userInput == "exit") // Exits the program
+        {
+            // I found how to delete a message queue by this resource: https://stackoverflow.com/questions/31671016/removing-a-message-queue
+            msgctl(msgqID, IPC_RMID, NULL); // Delete the message queue
+            std::cout << "Exiting..." << std::endl;
+            return 0;
+        }
+        else 
+        {
+            msgSend = msgsnd(msgqID, &buffer, sizeof(buffer.mtext), 0);
+            if (msgSend == -1)
+            {
+                perror("msgsnd");
+                return -1;
+            }
+        }
+    }
+    
+    return 0;
 }
