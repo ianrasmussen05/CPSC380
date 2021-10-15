@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    // Got msgget from: https://www.ibm.com/docs/en/zos/2.2.0?topic=functions-msgget-get-message-queue
     // Got 0666 from office hours
     msgqID = msgget(key, 0666 | IPC_CREAT); // generate message ID
     if (msgqID == -1)
@@ -50,6 +51,7 @@ int main(int argc, char *argv[])
     
     while (should_run) 
     {
+        // Got msgrcv from: https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-msgrcv-message-receive-operation
         msgReceive = msgrcv(msgqID, &buffer, MAX_LINE, 0, 0);
         if (msgReceive == -1)
         {

@@ -13,6 +13,7 @@ In this message queue program, the sender (msgqSend.cpp) takes input from the us
 * msgqReceive.cpp
 
 ## Resources:
+* Used many IBM docs for sending and receiving messages. They are referenced in both source files.
 * Went to office hours for help on '0666' when creating the key.
 * Referenced link on deleting queue in 'msgqSend.cpp'.
 

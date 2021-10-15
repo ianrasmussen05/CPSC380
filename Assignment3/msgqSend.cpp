@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    // Got msgget from: https://www.ibm.com/docs/en/zos/2.2.0?topic=functions-msgget-get-message-queue
     // Got 0666 from office hours
     msgqID = msgget(key, 0666 | IPC_CREAT); // generate message ID
     if (msgqID == -1)
@@ -68,6 +69,7 @@ int main(int argc, char *argv[])
         }
         else 
         {
+            // Got msgsnd function from: https://www.ibm.com/docs/en/zos/2.3.0?topic=functions-msgsnd-message-send-operations
             msgSend = msgsnd(msgqID, &buffer, sizeof(buffer.mtext), 0);
             if (msgSend == -1)
             {
