@@ -7,16 +7,9 @@
  * msgqReceive.cpp
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/wait.h>
-#include <sys/ipc.h>
 #include <sys/msg.h>
-#include <unistd.h>
-#include <errno.h>
 #include <iostream>
 #include <string.h>
-#include <string>
 
 #define MAX_LINE 80 // 80 chars per line, per command
 
@@ -40,7 +33,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    msgqID = msgget(key, 0555 | IPC_CREAT); // generate message ID
+    // Got 0666 from office hours
+    msgqID = msgget(key, 0666 | IPC_CREAT); // generate message ID
     if (msgqID == -1)
     {
         perror("msgget");
@@ -56,7 +50,7 @@ int main(int argc, char *argv[])
     
     while (should_run) 
     {
-        msgReceive = msgrcv(msgqID, &buffer, sizeof(buffer.mtext), 0, 0);
+        msgReceive = msgrcv(msgqID, &buffer, MAX_LINE, 0, 0);
         if (msgReceive == -1)
         {
             perror("msgrcv");
@@ -65,11 +59,13 @@ int main(int argc, char *argv[])
 
         if (buffer.mtext == "quit" || buffer.mtext == "exit")
         {
+            std::cout << buffer.mtext << std::endl;
             std::cout << "Exiting..." << std::endl;
             return 0;
         }
         else 
         {
+            std::cout << buffer.mtext << std::endl;
             system(buffer.mtext);
         }
     }

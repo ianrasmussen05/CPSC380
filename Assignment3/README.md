@@ -13,7 +13,8 @@ In this message queue program, the sender (msgqSend.cpp) takes input from the us
 * msgqReceive.cpp
 
 ## Resources:
-* None
+* Went to office hours for help on '0666' when creating the key.
+* Referenced link on deleting queue in 'msgqSend.cpp'.
 
 ## Code Limitations:
 * None
@@ -23,5 +24,5 @@ In this message queue program, the sender (msgqSend.cpp) takes input from the us
 * g++ msgqSend.cpp -o receive
 
 ## Execute Program:
-* ./receive <filename>
-* ./send <filename>
+* ./send (filename)
+* ./receive (filename)
