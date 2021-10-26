@@ -12,10 +12,15 @@
 #include <stdlib.h>
 #include <sched.h>
 #include <unistd.h>
-#include <ctype.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <errno.h>
 
 #define BUFFER_SIZE 256
 #define MEM_SIZE 262144
+#define FTOK_FILE "ftok.file"
+#define FTOK_ID 1
 
 struct Buffer
 {
@@ -48,7 +53,7 @@ int main(int argc, char *argv[])
     if (argc < 4)
     {
         printf("3 arguments as input is required.\n");
-        printf("Needed: <Filename> <numItems> <numTimes>\n");
+        printf("Needed: ./prodCon <Filename> <numItems> <numTimes>\n");
         return -1;
     }
 
@@ -78,6 +83,7 @@ int main(int argc, char *argv[])
     printf("%s\n", fileName);
     printf("%d\n", numItems);
     printf("%d\n", numTimes);
+
 
     while (runLoop)
     {

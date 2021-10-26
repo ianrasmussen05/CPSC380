@@ -9,6 +9,7 @@
 
 ## Source Files
 * prodCon.c
+* MakeFile
 
 ## Known Errors
 * 
@@ -16,6 +17,9 @@
 ## References
 * 
 
-# Execute Program
-* gcc -D_REENTRANT prodCon.c –o prodCon -lpthread
+## Execute Program
+* make
 * ./prodCon (keyfile) (number of items) (number of times)
+
+## Clean Directory
+* make clean
