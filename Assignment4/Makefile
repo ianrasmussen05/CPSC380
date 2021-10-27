@@ -1,4 +1,4 @@
-EXECUTABLE := prodCon
+EXECUTABLE := prodcon
 
 SOURCES := *.c
 
@@ -16,14 +16,15 @@ CFLAGS  := -g -Wall
 default: $(EXECUTABLE)
 
 # To create the executable file count we need the object files
-# prodCon.o:
-$(EXECUTABLE):  prodCon.o 
-	$(CC) $(CFLAGS) -o $(EXECUTABLE) prodCon.o
+# prodcon.o:
+$(EXECUTABLE):  checksum.o prodcon.o
+	$(CC) $(CFLAGS) checksum.o prodcon.o -o $(EXECUTABLE) -lpthread
 
-# To create the object file recfile.o, we need the source files
-# prodCon.c
-prodCon.o:  prodCon.c
-	$(CC) $(CFLAGS) -c prodCon.c -lpthread
+checksum.o: checksum.c 
+	$(CC) $(CFLAGS) -c checksum.c
+
+prodcon.o: prodcon.c 
+	$(CC) $(CFLAGS) -c prodcon.c checksum.o
 
 
 # Removes any files that end in .o to clean the folder
