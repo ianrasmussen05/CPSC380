@@ -44,8 +44,10 @@ void *producer(void *arg)
             pthread_mutex_lock(&m_mutex);
 
             cksum1 = 0;
+
             // This is where we write the data
-            for (int k = j * BUFFER_SIZE; k < ((j + 1) * BUFFER_SIZE) - 2; ++k) // Go to specific spot in memory
+            // Go to specific spot in memory minus the last two spots within the buffer for checksum
+            for (int k = j * BUFFER_SIZE; k < ((j + 1) * BUFFER_SIZE) - 2; ++k)
             {
                 memory[k] = rand() % RAND_DATA;
                 cksum1 += memory[k]; // This calculates the first checksum
@@ -57,8 +59,9 @@ void *producer(void *arg)
 
             // Unlocks the mutex to go to the next semaphore
             pthread_mutex_unlock(&m_mutex);
-            sem_post(&sem[1]); // Switch to second semaphore
         }
+        
+        sem_post(&sem[1]); // Switch to second semaphore
     }
 
     return NULL;
@@ -78,7 +81,10 @@ void *consumer(void *arg)
             pthread_mutex_lock(&m_mutex); // Locks the thread in the data space
 
             cksum2 = 0;
-            for (int k = j * BUFFER_SIZE; k < ((j + 1) * BUFFER_SIZE) - 2; ++k) // Go to specific spot in memory
+
+            // This is where it reads from memory
+            // Go to specific spot in memory minus the last two spots within the buffer for checksum
+            for (int k = j * BUFFER_SIZE; k < ((j + 1) * BUFFER_SIZE) - 2; ++k)
             {
                 cksum2 += memory[k]; // This calculates the next checksum
             }
@@ -91,8 +97,9 @@ void *consumer(void *arg)
             }
 
             pthread_mutex_unlock(&m_mutex);
-            sem_post(&sem[0]); // Switch back to first semaphore
         }
+
+        sem_post(&sem[0]); // Switch back to first semaphore
     }
 
     printf("The checksums match!\n");
