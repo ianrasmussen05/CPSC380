@@ -11,6 +11,7 @@ This program will read from a file containing logical addresses and, uses a TLB 
 ## Source Files
 * vmmgr.cpp
 * addresses.txt
+* output.txt
 * Makefile
 
 ## Code Limitations

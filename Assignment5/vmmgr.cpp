@@ -1,10 +1,12 @@
+/*
+ * Ian Rasmussen
+ * 2317200
+ * irasmussen@chapman.edu
+ * CPSC 380-01
+ * Assignment 5: Virtual Address Manager
+ */
+
 #include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <alloca.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
 #include <iostream>
 #include <string>
 
@@ -17,23 +19,24 @@
 #define BUFFER_SIZE 10
 
 // Arrays for the program
-int pageTableNumbers[PAGE_SIZE];
-int pageTableFrames[PAGE_SIZE];   
-int TLBPageNumber[TABLE_SIZE];  
-int TLBFrameNumber[TABLE_SIZE]; 
-int physicalMemory[FRAME_SIZE][FRAMES];
+int pageTable[PAGE_SIZE];  
+int tlb[TABLE_SIZE][2];
 
 // Statistic values
-int pageFault = 0;
+int pageFaults = 0;
 int TLBHits = 0;
+int countAddresses = 0;
 
 // Files
 FILE *backingFile;
 FILE *addressFile;
+FILE *printFile;
 
 // Values to input from reading from a file
 char buff[BUFFER_SIZE];
 int logicalAddress;
+
+void setArrays();
 
 int main (int argc, char* argv[])
 {
@@ -45,64 +48,159 @@ int main (int argc, char* argv[])
     }
     char *fileName = argv[1];
 
+    // Open backing store file
     // https://www.cplusplus.com/reference/cstdio/fopen/
     backingFile = fopen("BACKING_STORE.bin", "rb");
-
-    if (backingFile == NULL)
+    if (backingFile == NULL) // Check to see if it is not empty
     {
         std::cout << "There was a problem with the BACKING_STORE.bin file." << std::endl;
         return -1;
     }
 
-    addressFile = fopen(fileName, "r"); // Open file and read from it.
 
+    printFile = fopen("output.txt", "w+");
+    if (printFile == NULL)
+    {
+        std::cout << "Error opening the output.txt file." << std::endl;
+        return -1;
+    }
+    
+    
+    addressFile = fopen(fileName, "r"); // Open file and read from it.
     if (addressFile != NULL) // There are contents within the file
     {
-        // Now we must read each line
-        char buffer[256];
-        int readResult;
-        size_t len = 0;
-        ssize_t read;
+        // Create new variables while initializing a few of them
+        int pageNum;
+        int offset;
+        int foundPage;
+        int frame;
+        int physicalAddress;
+        int lineNum = 0;
 
-        // Seek to the beginning of the file
-        if(fseek(addressFile, 0, SEEK_SET) < 0)
+
+        setArrays(); // Set the contents of the arrays to -1.
+
+
+        // Got fgets from https://www.cplusplus.com/reference/cstdio/fgets/ 
+        // Gets each line in the file and puts it into the buffer
+        while (fgets(buff, BUFFER_SIZE, addressFile) != NULL)
         {
-            printf("Error seeking file: %d\n", errno);
-            return -1;
+            logicalAddress = atoi(buff); // Convert the char buffer to int
+
+            // These were done in class
+            pageNum = logicalAddress & ADDRESS;
+            pageNum = pageNum >> 8;
+            offset = logicalAddress & OFFSET;
+
+            foundPage = 0;
+            frame = 0;
+            physicalAddress = 0;
+
+            // Check for page number in TLB array
+            for (int i = 0; i < TABLE_SIZE; ++i)
+            {
+                if (tlb[i][0] == pageNum) // Page is found
+                {
+                    foundPage = 1; // True
+                    TLBHits++;
+                    frame = tlb[i][1]; // The second column in the tlb 2D array
+                    break;;
+                }
+            }
+
+            if (foundPage != 1)
+            {
+                int temp = 0;
+                int i;
+                
+                // Check for page number in page table array
+                for (i = 0; i < PAGE_SIZE; ++i)
+                {
+                    // Page is found
+                    if (pageTable[i] == pageNum)
+                    {
+                        frame = i;
+                        pageFaults++;
+                        break;
+                    }
+
+                    // Page is not found and is not previously inputted a page number
+                    if (pageTable[i] == -1)
+                    {
+                        pageTable[i] = pageNum;
+                        frame = i;
+                        break;
+                    }
+                }
+
+                tlb[lineNum][0] = pageNum;
+                tlb[lineNum][1] = i;
+                lineNum++;
+            }
+
+            physicalAddress = frame * PAGE_SIZE + offset;
+
+            std::string str = std::to_string(physicalAddress); // Convert integer to string
+            fputs(str.c_str(), printFile); // Print physical address to the output file
+
+            char nextLine[2] = "\n";
+            fputs(nextLine, printFile);
+            std::cout << str << std::endl;
+
+            countAddresses++; // Counts the address
         }
-
-        // The next lines are from: https://www.delftstack.com/howto/c/read-file-c/ 
-        struct stat statObject;
-        if (stat(fileName, &statObject) < 0)
-        {
-            printf("Error when creating file contents: %d\n", errno);
-            return -1;
-        }
-
-        char *fileContents = (char*) malloc(statObject.st_size);
-        readResult = fread(fileContents, statObject.st_size, 1, addressFile);
-
-        if (readResult < 0)
-        {
-            printf("Error reading the file: %d\n", errno);
-            return -1;
-        }
-
-        std::cout << fileContents << std::endl;
-
-
-
-        free(fileContents); // Free the memory of this variable
     }
     else 
     {
-        std::cout << "The file inputted is empty. Enter the correct file." << std::endl;
+        std::cout << "The file inputted is not correct. Use 'addresses.txt'." << std::endl;
         return -1;
     }
 
 
+    // Close reading files
     fclose(addressFile);
     fclose(backingFile);
 
+
+    // Statistics
+    double faultRate = 0;
+    double hitRate = 0;
+
+    faultRate = (pageFaults / (double) countAddresses) * 100;
+    hitRate = (TLBHits / (double) countAddresses) * 100;
+
+    // Printing statistics
+    std::string faultStr = "The fault rate is: " + std::to_string(faultRate) + "%.";
+    std::string hitStr = "The hit rate is: " + std::to_string(hitRate) + "%.";
+    char nextLine[2] = "\n";
+
+    fputs(faultStr.c_str(), printFile);
+    fputs(nextLine, printFile);
+    fputs(hitStr.c_str(), printFile);
+
+    std::cout << faultStr << std::endl;
+    std::cout << hitStr << std::endl;
+
+    // Close print file
+    fclose(printFile);
+
     return 0;
+}
+
+void setArrays()
+{
+    for (int i = 0; i < PAGE_SIZE; ++i)
+    {
+        pageTable[i] = -1;
+    }
+
+    for (int i = 0; i < TABLE_SIZE; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            tlb[i][j] = -1;
+        }
+    }
+
+    return;
 }
