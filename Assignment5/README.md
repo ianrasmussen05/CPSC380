@@ -15,11 +15,11 @@ This program will read from a file containing logical addresses and, uses a TLB 
 * Makefile
 
 ## Code Limitations
-* 
+* I am currently getting a segmentation fault in my code. When I do not set both the tbl and pageTable arrays to -1 in each cell, I do not get this error and I am able to see contents in the output.txt file.
 
 ## Resources
-* This is where I found to read line-by-line: https://www.delftstack.com/howto/c/read-file-c/
-* 
+* I used geeksforgeeks in finding how to use fopen(), fgets(), and fputs().
+* Used in class examples for the offset and getting page number.
 
 ## Build and Execute
 Using Makefile:

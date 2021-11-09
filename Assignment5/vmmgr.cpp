@@ -6,12 +6,10 @@
  * Assignment 5: Virtual Address Manager
  */
 
-#include <stdio.h>
 #include <iostream>
 #include <string>
 
 #define PAGE_SIZE 256
-#define FRAMES 256
 #define FRAME_SIZE 256
 #define TABLE_SIZE 16
 #define ADDRESS 0xFFFF
@@ -22,7 +20,7 @@
 int pageTable[PAGE_SIZE];  
 int tlb[TABLE_SIZE][2];
 
-// Statistic values
+// Statistical values
 int pageFaults = 0;
 int TLBHits = 0;
 int countAddresses = 0;
@@ -53,7 +51,7 @@ int main (int argc, char* argv[])
     backingFile = fopen("BACKING_STORE.bin", "rb");
     if (backingFile == NULL) // Check to see if it is not empty
     {
-        std::cout << "There was a problem with the BACKING_STORE.bin file." << std::endl;
+        std::cout << "Error opening/reading the BACKING_STORE.bin file." << std::endl;
         return -1;
     }
 
@@ -92,6 +90,7 @@ int main (int argc, char* argv[])
             pageNum = pageNum >> 8;
             offset = logicalAddress & OFFSET;
 
+            // Initialize more variables within the while loop
             foundPage = 0;
             frame = 0;
             physicalAddress = 0;
@@ -138,8 +137,10 @@ int main (int argc, char* argv[])
                 lineNum++;
             }
 
+            // Current frame * the page size in bytes (256) + the offset of the local address (0xFF)
             physicalAddress = frame * PAGE_SIZE + offset;
 
+            // Printing the lines to the output.txt file and command line
             std::string str = std::to_string(physicalAddress); // Convert integer to string
             fputs(str.c_str(), printFile); // Print physical address to the output file
 
@@ -147,7 +148,7 @@ int main (int argc, char* argv[])
             fputs(nextLine, printFile);
             std::cout << str << std::endl;
 
-            countAddresses++; // Counts the address
+            countAddresses++; // Counts the address each while loop iteration
         }
     }
     else 
