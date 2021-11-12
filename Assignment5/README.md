@@ -11,16 +11,17 @@ This program will read from a file containing logical addresses and, uses a TLB 
 ## Source Files
 * vmmgr.cpp
 * addresses.txt
+* BACKING_STORE.bin
 * Makefile
 
 ## Code Limitations
-* I am currently getting a segmentation fault in my code. Everything looks good. Will look at it with a set of fresh eyes tomorrow.
+* I am currently getting a segmentation fault in my code.
+* After using GDB to debug, I found that the segmentation fault is happening on line 132, or where I use `memcpy`. Not sure why.
 
 ## Resources
 * I used geeksforgeeks in finding how to use fopen() and fgets().
 * Used in class examples for the offset and getting page number.
 * Office hours on Thursday.
-* Still need to do an algorithm on inputting the physical memory back into the tlb using FIFO or LRU.
 
 ## Build and Execute
 Using Makefile:

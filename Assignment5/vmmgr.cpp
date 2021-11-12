@@ -128,6 +128,7 @@ int main (int argc, char* argv[])
                 {
                     // Copy memory from BACKING_STORE.bin file into main memory
                     // Got it from office hours
+                    // Keep getting sementation fault here
                     memcpy(physicalMemory + (frame * PAGE_SIZE), pntr + (pageNum * PAGE_SIZE), PAGE_SIZE);
                     physicalAddress = frame;
 
@@ -136,7 +137,9 @@ int main (int argc, char* argv[])
                     pageFaults++;
                 }
 
+
                 // Update tbl
+                // Table is not empty
                 if (tlbSize < TABLE_SIZE)
                 {
                     // Set values created above into tlb
@@ -145,21 +148,37 @@ int main (int argc, char* argv[])
                     tlbSize++;
                     currTBL++;
                 }
-                else // Table is full, do FIFO or LRU
+                else // Table is full, do FIFO
                 {
-                    
+                    // Remove the first tlb value in the array
+                    tlb[0].frameNum = -1;
+                    tlb[0].pageNum = -1;
 
+                    // Go through table checking if a tlb is -1, where it is replaced with its successor
+                    for (int j = 0; j < TABLE_SIZE - 1; ++j)
+                    {
+                        if (tlb[j].frameNum == -1 && tlb[j].pageNum == -1)
+                        {
+                            tlb[j].frameNum = tlb[j+1].frameNum;
+                            tlb[j].pageNum = tlb[j+1].pageNum;
 
+                            tlb[j+1].frameNum = -1;
+                            tlb[j+1].pageNum = -1;
+                        }
+                    }
 
-
-                    
+                    tlb[TABLE_SIZE-1].frameNum = frame;
+                    tlb[TABLE_SIZE-1].pageNum = pageNum;
                 }
             }
 
-            finalValue = physicalMemory[physicalAddress * PAGE_SIZE + offset];
+            // Value within physical memory
+            finalValue = physicalMemory[(physicalAddress * PAGE_SIZE) + offset];
+
 
             std::cout << "Virtual Address: " << logicalAddress << "\nPhysical Address: " << physicalAddress <<
                          "\nValue: " << finalValue << std::endl;
+            std::cout << std::endl;
 
 
             countAddresses++;        
