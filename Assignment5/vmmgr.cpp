@@ -6,6 +6,15 @@
  * Assignment 5: Virtual Address Manager
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <sched.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/mman.h>
 #include <iostream>
 #include <string>
 
@@ -16,9 +25,17 @@
 #define OFFSET 0xFF
 #define BUFFER_SIZE 10
 
+// Done in office hours
+typedef struct {
+    short pageNum; 
+    short frameNum;
+} TLB;
+
+
 // Arrays for the program
-int pageTable[PAGE_SIZE];  
-int tlb[TABLE_SIZE][2];
+int pageTable[PAGE_SIZE]; // set table to -1
+TLB tlb[TABLE_SIZE]; // Set page table to -1
+char physicalMemory[PAGE_SIZE * FRAME_SIZE];
 
 // Statistical values
 int pageFaults = 0;
@@ -26,7 +43,7 @@ int TLBHits = 0;
 int countAddresses = 0;
 
 // Files
-FILE *backingFile;
+int backingFile;
 FILE *addressFile;
 FILE *printFile;
 
@@ -46,15 +63,20 @@ int main (int argc, char* argv[])
     }
     char *fileName = argv[1];
 
+    int pntr;
+
     // Open backing store file
     // https://www.cplusplus.com/reference/cstdio/fopen/
-    backingFile = fopen("BACKING_STORE.bin", "rb");
-    if (backingFile == NULL) // Check to see if it is not empty
+    backingFile = open("BACKING_STORE.bin", O_RDONLY);
+    if (backingFile == -1) // Check to see if it is not empty
     {
+        //errno later
         std::cout << "Error opening/reading the BACKING_STORE.bin file." << std::endl;
         return -1;
     }
 
+    // Map Backing store file into shared memory using mmap
+    pntr= mmap(0, PAGE_SIZE * FRAME_SIZE, PROT_READ, MAP_PRIVATE, backingFile, 0);
 
     printFile = fopen("output.txt", "w+");
     if (printFile == NULL)
@@ -69,7 +91,7 @@ int main (int argc, char* argv[])
     {
         // Create new variables while initializing a few of them
         int pageNum;
-        int offset;
+        off_t offset;
         int foundPage;
         int frame;
         int physicalAddress;
@@ -90,23 +112,57 @@ int main (int argc, char* argv[])
             pageNum = pageNum >> 8;
             offset = logicalAddress & OFFSET;
 
+            //Substitute other code below
+            /*
+                //Loop on read address file, one at a time
+                //get logical address from file
+                //Calculate offsets (like above)
+                //get page number
+
+                search tlb if page number exists
+                (if page number exists, then increment page hit
+                    else check to see if page table has it, if not pageFault++, get free page.
+
+                    copy from backing file into main memory
+                    (memcpy(physicalMemory+frameNum*pageSize, pntr+pageNum*pageSize, pageSize))
+                    update page table
+
+                    update/add tlb)
+
+
+                Get actual values
+                (value = physicalMemory[frameNum*pageSize+offset])
+                print out main memory value
+
+                Outside loop: statistics
+
+            */
+
+
+
             // Initialize more variables within the while loop
             foundPage = 0;
             frame = 0;
             physicalAddress = 0;
 
+
+
+            // Create an function to insert something into frame table (FIFO/LRU)
+            // Create function to search TLB
             // Check for page number in TLB array
             for (int i = 0; i < TABLE_SIZE; ++i)
             {
-                if (tlb[i][0] == pageNum) // Page is found
+                
+                if (tlb[i].pageNum == pageNum) // Page is found
                 {
                     foundPage = 1; // True
                     TLBHits++;
-                    frame = tlb[i][1]; // The second column in the tlb 2D array
+                    frame = tlb[i].frameNum; // The second column in the tlb 2D array
                     break;;
                 }
             }
 
+            /*
             if (foundPage != 1)
             {
                 int temp = 0;
@@ -149,6 +205,7 @@ int main (int argc, char* argv[])
             std::cout << str << std::endl;
 
             countAddresses++; // Counts the address each while loop iteration
+            */
         }
     }
     else 
@@ -160,7 +217,7 @@ int main (int argc, char* argv[])
 
     // Close reading files
     fclose(addressFile);
-    fclose(backingFile);
+    close(backingFile);
 
 
     // Statistics
@@ -197,10 +254,8 @@ void setArrays()
 
     for (int i = 0; i < TABLE_SIZE; ++i)
     {
-        for (int j = 0; j < 2; ++j)
-        {
-            tlb[i][j] = -1;
-        }
+        tlb[i].frameNum = -1;
+        tlb[i].pageNum = -1;
     }
 
     return;
