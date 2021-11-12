@@ -6,17 +6,11 @@
  * Assignment 5: Virtual Address Manager
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sched.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
 #include <sys/mman.h>
 #include <iostream>
-#include <string>
 
 #define PAGE_SIZE 256
 #define FRAME_SIZE 256
@@ -45,7 +39,6 @@ int countAddresses = 0;
 // Files
 int backingFile;
 FILE *addressFile;
-FILE *printFile;
 
 // Values to input from reading from a file
 char buff[BUFFER_SIZE];
@@ -63,27 +56,19 @@ int main (int argc, char* argv[])
     }
     char *fileName = argv[1];
 
-    int pntr;
+    signed char *pntr;
 
     // Open backing store file
     // https://www.cplusplus.com/reference/cstdio/fopen/
     backingFile = open("BACKING_STORE.bin", O_RDONLY);
     if (backingFile == -1) // Check to see if it is not empty
     {
-        //errno later
-        std::cout << "Error opening/reading the BACKING_STORE.bin file." << std::endl;
+        printf("Error opening 'BACKING_STORE.bin' file. Error number: %d", errno);
         return -1;
     }
-
+ 
     // Map Backing store file into shared memory using mmap
-    pntr= mmap(0, PAGE_SIZE * FRAME_SIZE, PROT_READ, MAP_PRIVATE, backingFile, 0);
-
-    printFile = fopen("output.txt", "w+");
-    if (printFile == NULL)
-    {
-        std::cout << "Error opening the output.txt file." << std::endl;
-        return -1;
-    }
+    pntr = (signed char*) mmap(0, PAGE_SIZE * FRAME_SIZE, PROT_READ, MAP_PRIVATE, backingFile, 0);
     
     
     addressFile = fopen(fileName, "r"); // Open file and read from it.
@@ -95,7 +80,10 @@ int main (int argc, char* argv[])
         int foundPage;
         int frame;
         int physicalAddress;
+        int finalValue;
         int lineNum = 0;
+        int tlbSize = 0;
+        int currTBL = 0;
 
 
         setArrays(); // Set the contents of the arrays to -1.
@@ -106,106 +94,75 @@ int main (int argc, char* argv[])
         while (fgets(buff, BUFFER_SIZE, addressFile) != NULL)
         {
             logicalAddress = atoi(buff); // Convert the char buffer to int
+            //std::cout << "Logical Address: " << logicalAddress << std::endl;
 
             // These were done in class
             pageNum = logicalAddress & ADDRESS;
             pageNum = pageNum >> 8;
             offset = logicalAddress & OFFSET;
-
-            //Substitute other code below
-            /*
-                //Loop on read address file, one at a time
-                //get logical address from file
-                //Calculate offsets (like above)
-                //get page number
-
-                search tlb if page number exists
-                (if page number exists, then increment page hit
-                    else check to see if page table has it, if not pageFault++, get free page.
-
-                    copy from backing file into main memory
-                    (memcpy(physicalMemory+frameNum*pageSize, pntr+pageNum*pageSize, pageSize))
-                    update page table
-
-                    update/add tlb)
-
-
-                Get actual values
-                (value = physicalMemory[frameNum*pageSize+offset])
-                print out main memory value
-
-                Outside loop: statistics
-
-            */
-
-
-
-            // Initialize more variables within the while loop
-            foundPage = 0;
-            frame = 0;
-            physicalAddress = 0;
-
-
-
-            // Create an function to insert something into frame table (FIFO/LRU)
-            // Create function to search TLB
-            // Check for page number in TLB array
-            for (int i = 0; i < TABLE_SIZE; ++i)
+            
+            int foundPage = 0;
+            int i = 0;
+            for (i = 0; i < TABLE_SIZE; ++i)
             {
-                
-                if (tlb[i].pageNum == pageNum) // Page is found
+                // The page is found
+                if (tlb[i].pageNum == pageNum)
                 {
-                    foundPage = 1; // True
                     TLBHits++;
-                    frame = tlb[i].frameNum; // The second column in the tlb 2D array
-                    break;;
+                    foundPage = 1;
+                    frame = tlb[i].frameNum;
+                    break;
                 }
             }
 
-            /*
+            // Page is not found in tbl array, must check in page table
             if (foundPage != 1)
             {
-                int temp = 0;
-                int i;
-                
-                // Check for page number in page table array
-                for (i = 0; i < PAGE_SIZE; ++i)
+                // Page number in page table is found
+                if (pageTable[pageNum] != -1)
                 {
-                    // Page is found
-                    if (pageTable[i] == pageNum)
-                    {
-                        frame = i;
-                        pageFaults++;
-                        break;
-                    }
+                    std::cout << "Hit on page: " << pageNum << std::endl;
+                    physicalAddress = frame;
+                }
+                else 
+                {
+                    // Copy memory from BACKING_STORE.bin file into main memory
+                    // Got it from office hours
+                    memcpy(physicalMemory + (frame * PAGE_SIZE), pntr + (pageNum * PAGE_SIZE), PAGE_SIZE);
+                    physicalAddress = frame;
 
-                    // Page is not found and is not previously inputted a page number
-                    if (pageTable[i] == -1)
-                    {
-                        pageTable[i] = pageNum;
-                        frame = i;
-                        break;
-                    }
+                    // Update page table
+                    pageTable[pageNum] = physicalAddress;
+                    pageFaults++;
                 }
 
-                tlb[lineNum][0] = pageNum;
-                tlb[lineNum][1] = i;
-                lineNum++;
+                // Update tbl
+                if (tlbSize < TABLE_SIZE)
+                {
+                    // Set values created above into tlb
+                    tlb[currTBL].frameNum = frame;
+                    tlb[currTBL].pageNum = pageNum;
+                    tlbSize++;
+                    currTBL++;
+                }
+                else // Table is full, do FIFO or LRU
+                {
+                    
+
+
+
+
+                    
+                }
             }
 
-            // Current frame * the page size in bytes (256) + the offset of the local address (0xFF)
-            physicalAddress = frame * PAGE_SIZE + offset;
+            finalValue = physicalMemory[physicalAddress * PAGE_SIZE + offset];
 
-            // Printing the lines to the output.txt file and command line
-            std::string str = std::to_string(physicalAddress); // Convert integer to string
-            fputs(str.c_str(), printFile); // Print physical address to the output file
+            std::cout << "Virtual Address: " << logicalAddress << "\nPhysical Address: " << physicalAddress <<
+                         "\nValue: " << finalValue << std::endl;
 
-            char nextLine[2] = "\n";
-            fputs(nextLine, printFile);
-            std::cout << str << std::endl;
 
-            countAddresses++; // Counts the address each while loop iteration
-            */
+            countAddresses++;        
         }
     }
     else 
@@ -221,26 +178,17 @@ int main (int argc, char* argv[])
 
 
     // Statistics
-    double faultRate = 0;
-    double hitRate = 0;
-
-    faultRate = (pageFaults / (double) countAddresses) * 100;
-    hitRate = (TLBHits / (double) countAddresses) * 100;
+    double faultRate = (pageFaults / (double) countAddresses) * 100;
+    double hitRate = (TLBHits / (double) countAddresses) * 100;
 
     // Printing statistics
     std::string faultStr = "The fault rate is: " + std::to_string(faultRate) + "%.";
     std::string hitStr = "The hit rate is: " + std::to_string(hitRate) + "%.";
     char nextLine[2] = "\n";
 
-    fputs(faultStr.c_str(), printFile);
-    fputs(nextLine, printFile);
-    fputs(hitStr.c_str(), printFile);
-
     std::cout << faultStr << std::endl;
     std::cout << hitStr << std::endl;
-
-    // Close print file
-    fclose(printFile);
+    
 
     return 0;
 }

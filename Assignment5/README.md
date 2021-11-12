@@ -11,15 +11,16 @@ This program will read from a file containing logical addresses and, uses a TLB 
 ## Source Files
 * vmmgr.cpp
 * addresses.txt
-* output.txt
 * Makefile
 
 ## Code Limitations
-* I am currently getting a segmentation fault in my code. When I do not set both the tbl and pageTable arrays to -1 in each cell, I do not get this error and I am able to see contents in the output.txt file.
+* I am currently getting a segmentation fault in my code. Everything looks good. Will look at it with a set of fresh eyes tomorrow.
 
 ## Resources
-* I used geeksforgeeks in finding how to use fopen(), fgets(), and fputs().
+* I used geeksforgeeks in finding how to use fopen() and fgets().
 * Used in class examples for the offset and getting page number.
+* Office hours on Thursday.
+* Still need to do an algorithm on inputting the physical memory back into the tlb using FIFO or LRU.
 
 ## Build and Execute
 Using Makefile:
