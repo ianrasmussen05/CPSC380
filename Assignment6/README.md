@@ -14,10 +14,10 @@
 * `Makefile`
 
 ## Resources
-
+* Used this link to sort the cylinders: https://www.educba.com/c-plus-plus-sort/ 
 
 ## Limitations
-
+* Have not completed SSTF.
 
 ## Compile and Execute
 To compile:
