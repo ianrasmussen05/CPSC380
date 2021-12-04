@@ -23,6 +23,7 @@ int SCAN(int initialPosition, visitedCylinders cylinders[CYLINDERS]);
 int CSCAN(int initialPosition, visitedCylinders cylinders[CYLINDERS]);
 int findClosestValueSSTF(int initialPosition, visitedCylinders cylinders[CYLINDERS]);
 int findClosestValueSCAN(int initialPosition, visitedCylinders cylinders[CYLINDERS]);
+void resetVisited(visitedCylinders cylinders[CYLINDERS]);
 bool checkVisited(visitedCylinders cylinders[CYLINDERS]);
 
 int main (int argc, char* argv[])
@@ -87,6 +88,8 @@ int FCFS(int initialPosition, visitedCylinders cylinders[CYLINDERS])
 {
     int totalMovement = 0;
 
+    resetVisited(cylinders);
+
     // The first case, finding difference between initial position and first cylinder
     // This if statement makes sure of no negative numbers
     if (initialPosition > cylinders[0].value) 
@@ -110,26 +113,29 @@ int FCFS(int initialPosition, visitedCylinders cylinders[CYLINDERS])
     // Now we iterate through the cylinders struct to get the total movement
     for (int i = 0; i < CYLINDERS; ++i)
     {
+        int diff;
         if (i == CYLINDERS-1)
         {
             cylinders[CYLINDERS-1].visited = 1;
+            break;
         }
 
         if (cylinders[i].value > cylinders[i+1].value)
         {
-            cylinders[i].visited = 1;
-            totalMovement += cylinders[i].value - cylinders[i+1].value;
+            diff = cylinders[i].value - cylinders[i+1].value;
+            totalMovement += diff;
         }
         else if (cylinders[i].value < cylinders[i+1].value)
         {
-            cylinders[i].visited = 1;
-            totalMovement += cylinders[i+1].value - cylinders[i].value;
+            diff = cylinders[i+1].value - cylinders[i].value;
+            totalMovement += diff;
         }
         else 
         {
-            cylinders[i].visited = 1;
             totalMovement += 0;
         }
+
+        cylinders[i].visited = 1;
     }
 
     // Checks to see if every cylinder in the file has been visited
@@ -146,55 +152,16 @@ int FCFS(int initialPosition, visitedCylinders cylinders[CYLINDERS])
 int SSTF(int initialPosition, visitedCylinders cylinders[CYLINDERS])
 {
     int totalMovement = 0;
-    int curr = 0;
-    int i = 0;
+    int currPosition = 0;
+    int newPosition = 0;
+    int smallIterator = 0;
+    int bigIterator = 0;
+    int smallDiff = 0;
+    int bigDiff = 0;
+    int n = 0;
 
-    /*
-    while (curr != CYLINDERS)
-    {
-        int minValue = CYLINDERS;
-        int diff;
-        int n; 
-
-        for (i = 0; i < CYLINDERS; ++i)
-        {
-            if (cylinders[i].visited == 1)
-            {
-                continue;
-            }
-
-
-            if (cylinders[i].value > initialPosition)
-            {
-                diff = cylinders[i].value - initialPosition;
-            }
-            else 
-            {
-                diff = initialPosition - cylinders[i].value;
-                
-            }
-
-
-            if (diff < minValue)
-            {
-                minValue = diff;
-                n = i;
-            }
-        }
-        std::cout << "n: " << n << "\n";
-
-        cylinders[n].visited = 1;
-        initialPosition = cylinders[n].value;
-        totalMovement += minValue;
-
-        curr++;
-    }
-    */
-
-    
-
-    /*
     int cyl[CYLINDERS];
+
 
     // Copy the struct to an array of the values in the struct to sort for later
     for (int i = 0; i < CYLINDERS; ++i)
@@ -213,33 +180,58 @@ int SSTF(int initialPosition, visitedCylinders cylinders[CYLINDERS])
     }
 
 
-    int startPoint = findClosestValueSSTF(initialPosition, cylinders);
-    std::cout << startPoint << std::endl;
-
-    totalMovement += initialPosition - cylinders[startPoint].value;
-
-    int n = 0;
-    int currStart = startPoint;
-    while (n < CYLINDERS)
+    // Find the closest starting position from initial position
+    for (int i = 0; i < CYLINDERS; ++i)
     {
-        int temp;
-        temp = findClosestValueSSTF(currStart, cylinders);
-        cylinders[currStart].visited = 1;
-
-        totalMovement += currStart - cylinders[temp].value;
-        //std::cout << totalMovement << "\t";
-
-        n++;
+        if (initialPosition > cylinders[i].value)
+        {
+            currPosition = i;
+        }
     }
-    //std::cout << std::endl;
-    */
 
+    // Assign the positions of the values
+    newPosition = currPosition;
+    smallIterator = currPosition - 1;
+    bigIterator = currPosition + 1;
 
-    // Checks to see if every cylinder in the file has been visited
-    if (!checkVisited(cylinders))
+    while (n <= CYLINDERS - 2)
     {
-        std::cout << "Not all cylinders have been visited." << std::endl;
-        return -1;
+        // Find the difference in values between the current position and the position to the left of it
+        if (cylinders[newPosition].value > cylinders[smallIterator].value)
+        {
+            smallDiff = cylinders[newPosition].value - cylinders[smallIterator].value;
+        }
+        else 
+        {
+            smallDiff = cylinders[smallIterator].value - cylinders[newPosition].value;
+        }
+
+        // Find the difference in values between the current position and the position to the right of it
+        if (cylinders[bigIterator].value > cylinders[newPosition].value)
+        {
+            bigDiff = cylinders[bigIterator].value - cylinders[newPosition].value;
+        }
+        else 
+        {
+            bigDiff = cylinders[newPosition].value - cylinders[bigIterator].value;
+        }
+
+
+		if(smallDiff < bigDiff) 
+        {
+			totalMovement += smallDiff;
+			newPosition = smallIterator;
+			smallIterator--;
+			
+		} 
+        else 
+        {
+			totalMovement += bigDiff;
+			newPosition = bigIterator;
+			bigIterator++;
+		}
+
+		n++;
     }
 
 
@@ -250,6 +242,8 @@ int SCAN(int initialPosition, visitedCylinders cylinders[CYLINDERS])
 {
     int totalMovement = 0;
     int cyl[CYLINDERS];
+
+    resetVisited(cylinders);
 
     // Copy the struct to an array of the values in the struct to sort for later
     for (int i = 0; i < CYLINDERS; ++i)
@@ -317,6 +311,8 @@ int CSCAN(int initialPosition, visitedCylinders cylinders[CYLINDERS])
 {
     int totalMovement = 0;
     int cyl[CYLINDERS];
+
+    resetVisited(cylinders);
 
     // Copy the struct to an array of the values in the struct to sort for later
     for (int i = 0; i < CYLINDERS; ++i)
@@ -425,6 +421,14 @@ int findClosestValueSCAN(int initialPosition, visitedCylinders cylinders[CYLINDE
 
 
     return i-1;
+}
+
+void resetVisited(visitedCylinders cylinders[CYLINDERS])
+{
+    for (int i = 0; i < CYLINDERS; ++i)
+    {
+        cylinders[i].visited = 0;
+    }
 }
 
 bool checkVisited(visitedCylinders cylinders[CYLINDERS])
